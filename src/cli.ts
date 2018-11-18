@@ -1,5 +1,5 @@
 import { join } from 'path';
-import { ensureDirSync, writeFileSync, readFileSync, copyFileSync } from 'fs-extra';
+import { ensureDirSync, writeFileSync, copyFileSync } from 'fs-extra';
 import { execFileSync } from 'child_process';
 
 const usage = () => {
@@ -55,5 +55,3 @@ copyFileSync(
   join(srcDir, 'getnetworkinfo', 'index.test.ts'),
   join(methodDir, 'index.test.ts'),
 );
-
-debugger;
