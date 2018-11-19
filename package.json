@@ -20,8 +20,10 @@
     "build": "tsc",
     "check": "tslint --project . --exclude '**/*.json'",
     "clean": "rimraf lib",
+    "cli": "ts-node src/cli.ts",
     "fix": "npm run check -- --fix",
     "test": "npm run check && npm run build",
+    "watch": "npm run build -- --watch",
     "preversion": "npm test",
     "postversion": "npm publish"
   },
@@ -29,7 +31,6 @@
   "devDependencies": {
     "@carnesen/tsconfig": "0.0.1",
     "@carnesen/tslint-config": "0.0.2",
-    "@types/fs-extra": "5.0.4",
     "@types/node": "10.12.0",
     "fs-extra": "7.0.1",
     "quicktype": "15.0.153",

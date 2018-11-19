@@ -1,6 +1,6 @@
 import { join } from 'path';
-import { ensureDirSync, writeFileSync, copyFileSync } from 'fs-extra';
 import { execFileSync } from 'child_process';
+import { writeFileSync, unlinkSync } from 'fs';
 
 const usage = () => {
   console.log('Usage: ts-node cli.ts <method> [<arg0> ...]');
@@ -14,18 +14,15 @@ if (!methodName) {
 }
 
 const bitcoinCliExecutablePath = '/Users/chrisarnesen/bitcoin-0.17.0/bin/bitcoin-cli';
-const bitcoinCliArgs = ['-testnet', methodName, ...restArgs];
-
+const bitcoinCliArgs = ['-testnet', '-named', methodName.toLowerCase(), ...restArgs];
 const bitcoinCliOutput = execFileSync(bitcoinCliExecutablePath, bitcoinCliArgs, {
   encoding: 'utf8',
 });
 
 const srcDir = __dirname;
-const methodDir = join(srcDir, methodName);
+const examplesDir = join(srcDir, 'examples');
 
-ensureDirSync(methodDir);
-
-const resultFilePath = join(methodDir, 'example.json');
+const resultFilePath = join(examplesDir, `${methodName}Result.json`);
 
 writeFileSync(resultFilePath, bitcoinCliOutput);
 
@@ -39,19 +36,19 @@ const quicktypeCliArgs = [
   'ts',
   '--just-types',
 ];
-const quicktypeCliOutput = execFileSync(quicktypeCliPath, quicktypeCliArgs, {
-  encoding: 'utf8',
-});
 
-const indexFilePath = join(methodDir, 'index.ts');
-const indexFileContents = quicktypeCliOutput.replace(
-  'interface Example',
-  'type Result =',
-);
+let typeDefinition: string = `export type ${methodName}Result = string`;
+try {
+  const quicktypeCliOutput = execFileSync(quicktypeCliPath, quicktypeCliArgs, {
+    encoding: 'utf8',
+  });
+  typeDefinition = quicktypeCliOutput.replace('interface', 'type');
+} catch (ex) {
+  if (!ex.stderr.includes('Parser cannot parse')) {
+    throw ex;
+  }
+  console.log(bitcoinCliOutput);
+  unlinkSync(resultFilePath);
+}
 
-writeFileSync(indexFilePath, indexFileContents);
-
-copyFileSync(
-  join(srcDir, 'getnetworkinfo', 'index.test.ts'),
-  join(methodDir, 'index.test.ts'),
-);
+console.log(typeDefinition);
